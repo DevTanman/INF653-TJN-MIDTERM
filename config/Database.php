@@ -1,23 +1,31 @@
 <?php 
   class Database {
-    // DB Params
-    private $host = 'localhost';
-    private $db_name = 'quotesdb';
-    private $username = 'root';
-    private $password = '1234';
+
+    private $hostname;
+    private $database;
+    private $username;
+    private $password;
+
     private $conn;
 
     // DB Connect
     public function connect() {
-      $this->conn = null;
+      $url = getenv('JAWSDB_URL');
+      $dbparts = parse_url($url);
+  
+      $hostname = $dbparts['host'];
+      $username = $dbparts['user'];
+      $password = $dbparts['pass'];
+      $database = ltrim($dbparts['path'],'/');
 
-      try { 
-        $this->conn = new PDO('mysql:host=' . $this->host . ';dbname=' . $this->db_name, $this->username, $this->password);
-        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      } catch(PDOException $e) {
-        echo 'Connection Error: ' . $e->getMessage();
+      try {
+        $conn = new PDO("mysql:host=$hostname;dbname=$database", $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $conn;
       }
-
-      return $this->conn;
+      catch(PDOException $e)
+      {
+        echo "Connection failed: " . $e->getMessage();
+      }
     }
   }
